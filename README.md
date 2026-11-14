@@ -1,63 +1,76 @@
 # NEON TIDE
 
-A round-based tactical FPS in three.js. Two crews fight over a rainy neon harbor
-at night: the **Tidebreakers** (teal) attack, the **Harbor Wardens** (magenta)
-defend. First to 5 rounds takes the harbor, at most 9 rounds, sides swap after
-round 4.
+A round-based tactical FPS in a rainy neon harbor at night, built with three.js
+0.187.0 for the make.fun bounty `threejs-fps-02`. Static files only: open
+`game/index.html` in a desktop browser and play single-player against bots. No
+build step, no network requests.
 
-## The twist
+## The game
 
-One team carries a **data-core** to the **uplink terminal** in the north of the
-map. The carrier channels it for 3 seconds (hold `E` in the magenta ring) to
-win the round outright. If the carrier goes down, the core drops and anyone on
-the attacking crew can pick it up. Every 3rd round is a **TIDE SURGE** round:
-low gravity, faster movement.
+Two teams fight over a harbor at night: the teal **Tidebreakers** against the
+magenta **Wardens**. Rain falls, the skyline glows, and three lanes (west
+alley, mid dock, east pier) connect the spawns to the uplink terminal.
 
-## How to play
+- **5v5, first to 5 rounds** (max 9), sides swap after round 4.
+- **Buy phase (15 s)** then a **100 s round**. Money carries between rounds.
+- **Objective:** the attackers carry a data-core to the uplink terminal (the
+  magenta ring on the north side) and channel it for 3 s while holding E. If
+  the carrier dies, the core drops and any attacker can pick it up. Defenders
+  win by elimination or by running the clock out.
+- **Tide Surge** on rounds 3, 6 and 9: gravity drops to 0.45x and movement
+  speed rises 25%, with a banner and a HUD badge.
+- **Economy:** start $800, kill +$300, round win +$3000, round loss +$1900 plus
+  a loss-streak bonus up to +$1000, uplink complete +$300.
+- **Arsenal:** P9 Tide pistol (free), Kestrel-9 SMG $1500, Tempest AR $2700,
+  Longshot DMR $4200, Harbor Plating armor $650 (absorbs 50%), and three
+  gadgets: Mist Orb smoke $400, Strobe Orb flash $300, Echo Drone decoy $500.
+- **Bots:** 9 named bots in five styles (rusher, holder, flanker, marksman,
+  support) with waypoint navigation, line-of-sight plus field-of-view plus
+  smoke awareness, gunfire hearing, and burst fire with per-style aim error
+  and reaction time.
+- **HUD:** health, armor, ammo, money, round timer, team score, objective
+  line, carrier tag, surge badge, minimap, killfeed, dynamic crosshair,
+  hitmarker, damage vignette, flash overlay, round banners, and a buy menu.
+- **Sound:** everything is synthesized with WebAudio: a distinct sound per
+  weapon, reload, hit and kill ticks, hurt, buy, uplink tick, win and lose
+  stingers, a surge swell, and rain ambience.
 
-Serve `game/` with any static server (`node serve.ts`, then open
-http://localhost:8080) and click to play. Desktop browser with WebGL 2.
+## Controls
 
-- `W A S D` move, mouse look, click fire, `R` reload
-- `Ctrl`/`C` crouch, `Space` jump
-- `1–4` switch weapon (live) or buy (buy phase), `5–7` gadgets
-- `B` buy menu, `Enter` deploy, `Q` throw gadget, `E` uplink / hold the core
-- `Esc` pause
+| Input | Action |
+| --- | --- |
+| Click the view | Capture the mouse (pointer lock) |
+| WASD | Move |
+| Mouse | Aim |
+| Click | Fire (hold for automatics) |
+| R | Reload |
+| Q | Swap primary / pistol |
+| G | Use gadget (smoke, then flash, then decoy) |
+| E (hold) | Channel the uplink while carrying the core |
+| Space | Jump |
+| 1-7 / click | Buy during the buy phase |
+| Enter / DEPLOY | Start the round |
 
-## Economy
+## Files
 
-Kills pay $300, round wins $3000, losses $1900 plus a streak bonus, an uplink
-pays $300. Spend it between rounds:
+- `game/` — the whole game: `index.html` (one import map for `three`),
+  `three.module.min.js` + `three.core.min.js` (three.js 0.187.0, vendored
+  byte-for-byte), and `src/` with the game code.
+- `screenshots/` — four real renders of the game: menu, buy phase, live
+  action, and a Tide Surge round.
+- `vendor/makefun-threejs.ts` — the kit's dossier library, unchanged.
+- `main.ts` — the entrypoint: copies `game/` and `screenshots/` to `/output`
+  and writes `/output/dossier.json`.
 
-| Item | Price | Role |
-| --- | --- | --- |
-| P9 Tide (sidearm) | free | Reliable backup |
-| Kestrel-9 (SMG) | $1500 | Close lanes, bullet hose |
-| Tempest AR (rifle) | $2700 | The all-rounder |
-| Longshot (DMR) | $4200 | One shot, one down |
-| Harbor Plating | $650 | Absorbs half of incoming damage |
-| Mist Orb (smoke) | $400 | Blocks sight for 12s |
-| Strobe Orb (flash) | $300 | Blinds anyone looking at it |
-| Echo Drone (decoy) | $500 | Fake gunfire, draws enemy fire |
+## Run it locally
 
-## Gunplay
+```sh
+node serve.ts
+# open http://localhost:8080
+```
 
-Hitscan weapons with real spread and recoil: firing on the move punishes you,
-stopping to aim pays. Headshots deal triple damage (2.6x on the Longshot).
-Bots have names and styles: rushers push lanes, holders lock angles, flankers
-take the sides, marksmen hold long sightlines, and the support escorts the
-carrier. They hear gunfire, react to flashes and smoke, and fight back in
-bursts.
+## Test hooks
 
-## Tech
-
-- three.js 0.187.0, vendored under `game/vendor/three/`, loaded by import map
-- Static files only, no build step, no network requests
-- Fixed 60 Hz simulation apart from rendering; one module per system
-  (`world`, `player`, `bots`, `weapons`, `economy`, `rounds`, `effects`,
-  `hud`, `audio`, `input`)
-- All sound is synthesized with WebAudio, no audio files
-
-## Screenshots
-
-`?shot=menu|buy|action|surge&seed=1` stages a deterministic frame for capture.
+Load the game with `?test=1` to expose `window.__NT` (state, stepping, and
+control hooks used by the automated playtest). Load it with
+`?shot=menu|buy|action|surge` to stage a deterministic scene for screenshots.
